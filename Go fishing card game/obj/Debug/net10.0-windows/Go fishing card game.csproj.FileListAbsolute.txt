@@ -1,0 +1,6 @@
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go_fishing_card_game.Form1.resources
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.csproj.GenerateResource.cache
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.AssemblyInfoInputs.cache
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.AssemblyInfo.cs
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.csproj.CoreCompileInputs.cache
