@@ -4,3 +4,13 @@ C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\
 C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.AssemblyInfoInputs.cache
 C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.AssemblyInfo.cs
 C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.csproj.CoreCompileInputs.cache
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\bin\Debug\net10.0-windows\Go fishing card game.exe
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\bin\Debug\net10.0-windows\Go fishing card game.deps.json
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\bin\Debug\net10.0-windows\Go fishing card game.runtimeconfig.json
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\bin\Debug\net10.0-windows\Go fishing card game.dll
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\bin\Debug\net10.0-windows\Go fishing card game.pdb
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.dll
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\refint\Go fishing card game.dll
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.pdb
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\Go fishing card game.genruntimeconfig.cache
+C:\Users\admin\source\repos\Go fishing card game\Go fishing card game\obj\Debug\net10.0-windows\ref\Go fishing card game.dll

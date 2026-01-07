@@ -6,20 +6,25 @@ namespace Go_fishing_card_game
 {
     internal class Deck
     {
-        private List<Card> cards;
+        private List<Card> cards = new();
         private Random random = new Random();
+        private sealed class FactoryToken { }
+        private static readonly FactoryToken token = new();
 
-        public Deck()
+        private Deck(FactoryToken _) { }
+
+        public static Deck CreateFullDeck()
         {
-            cards = new List<Card>();
+            var deck = new Deck(token);
             for (int suit = 0; suit <= 3; suit++)
                 for (int value = 1; value <= 13; value++)
-                    cards.Add(new Card((Suits)suit, (Values)value));
+                    deck.Add(new Card((Suits)suit, (Values)value));
+            return deck;
         }
 
-        public Deck(IEnumerable<Card> initialCards)
+        public static Deck CreateEmptyDeck()
         {
-            cards = new List<Card>(initialCards);
+            return new Deck(token); 
         }
 
         public int Count { get { return cards.Count; } }
@@ -73,7 +78,7 @@ namespace Go_fishing_card_game
 
         public Deck PullOutValues(Values value)
         {
-            Deck deckToReturn = new Deck(new Card[] { });
+            Deck deckToReturn = CreateEmptyDeck();
             for (int i = cards.Count - 1; i >= 0; i--)
                 if (cards[i].Value == value)
                     deckToReturn.Add(Deal(i));

@@ -28,52 +28,52 @@
         /// </summary>
         private void InitializeComponent()
         {
-            textName = new TextBox();
-            buttonStart = new Button();
-            textProgress = new TextBox();
-            textBooks = new TextBox();
+            playerNameTextBox = new TextBox();
+            startButton = new Button();
+            gameProgressTextBox = new TextBox();
+            completedBooksTextBox = new TextBox();
             label1 = new Label();
-            button1 = new Button();
             label2 = new Label();
             label3 = new Label();
-            buttonAsk = new Button();
-            listHand = new ListBox();
+            askForCardButton = new Button();
+            handListBox = new ListBox();
+            gameProgressLabel = new Label();
             SuspendLayout();
             // 
-            // textName
+            // playerNameTextBox
             // 
-            textName.Location = new Point(24, 24);
-            textName.Name = "textName";
-            textName.Size = new Size(244, 23);
-            textName.TabIndex = 0;
+            playerNameTextBox.Location = new Point(24, 24);
+            playerNameTextBox.Name = "playerNameTextBox";
+            playerNameTextBox.Size = new Size(244, 23);
+            playerNameTextBox.TabIndex = 0;
             // 
-            // buttonStart
+            // startButton
             // 
-            buttonStart.Location = new Point(274, 24);
-            buttonStart.Name = "buttonStart";
-            buttonStart.Size = new Size(277, 23);
-            buttonStart.TabIndex = 1;
-            buttonStart.Text = "Rozpocznij grę";
-            buttonStart.UseVisualStyleBackColor = true;
-            buttonStart.Click += buttonStart_Click;
+            startButton.Location = new Point(274, 24);
+            startButton.Name = "startButton";
+            startButton.Size = new Size(277, 23);
+            startButton.TabIndex = 1;
+            startButton.Text = "Rozpocznij grę";
+            startButton.UseVisualStyleBackColor = true;
+            startButton.Click += buttonStart_Click;
             // 
-            // textProgress
+            // gameProgressTextBox
             // 
-            textProgress.Location = new Point(24, 77);
-            textProgress.Multiline = true;
-            textProgress.Name = "textProgress";
-            textProgress.ReadOnly = true;
-            textProgress.Size = new Size(527, 245);
-            textProgress.TabIndex = 3;
+            gameProgressTextBox.Location = new Point(24, 77);
+            gameProgressTextBox.Multiline = true;
+            gameProgressTextBox.Name = "gameProgressTextBox";
+            gameProgressTextBox.ReadOnly = true;
+            gameProgressTextBox.Size = new Size(527, 245);
+            gameProgressTextBox.TabIndex = 3;
             // 
-            // textBooks
+            // completedBooksTextBox
             // 
-            textBooks.Location = new Point(24, 350);
-            textBooks.Multiline = true;
-            textBooks.Name = "textBooks";
-            textBooks.ReadOnly = true;
-            textBooks.Size = new Size(527, 88);
-            textBooks.TabIndex = 4;
+            completedBooksTextBox.Location = new Point(24, 350);
+            completedBooksTextBox.Multiline = true;
+            completedBooksTextBox.Name = "completedBooksTextBox";
+            completedBooksTextBox.ReadOnly = true;
+            completedBooksTextBox.Size = new Size(527, 88);
+            completedBooksTextBox.TabIndex = 4;
             // 
             // label1
             // 
@@ -83,15 +83,6 @@
             label1.Size = new Size(30, 15);
             label1.TabIndex = 5;
             label1.Text = "Imię";
-            // 
-            // button1
-            // 
-            button1.Location = new Point(24, 62);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 6;
-            button1.Text = "Postępy gry";
-            button1.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
@@ -111,40 +102,49 @@
             label3.TabIndex = 8;
             label3.Text = "Ręka";
             // 
-            // buttonAsk
+            // askForCardButton
             // 
-            buttonAsk.Enabled = false;
-            buttonAsk.Location = new Point(557, 415);
-            buttonAsk.Name = "buttonAsk";
-            buttonAsk.Size = new Size(231, 23);
-            buttonAsk.TabIndex = 9;
-            buttonAsk.Text = "Zażądaj karty";
-            buttonAsk.UseVisualStyleBackColor = true;
-            buttonAsk.Click += buttonAsk_Click;
+            askForCardButton.Enabled = false;
+            askForCardButton.Location = new Point(557, 415);
+            askForCardButton.Name = "askForCardButton";
+            askForCardButton.Size = new Size(231, 23);
+            askForCardButton.TabIndex = 9;
+            askForCardButton.Text = "Zażądaj karty";
+            askForCardButton.UseVisualStyleBackColor = true;
+            askForCardButton.Click += buttonAsk_Click;
             // 
-            // listHand
+            // handListBox
             // 
-            listHand.FormattingEnabled = true;
-            listHand.Location = new Point(557, 27);
-            listHand.Name = "listHand";
-            listHand.Size = new Size(231, 379);
-            listHand.TabIndex = 10;
+            handListBox.FormattingEnabled = true;
+            handListBox.Location = new Point(557, 27);
+            handListBox.Name = "handListBox";
+            handListBox.Size = new Size(231, 379);
+            handListBox.TabIndex = 10;
+            // 
+            // gameProgressLabel
+            // 
+            gameProgressLabel.AutoSize = true;
+            gameProgressLabel.Location = new Point(33, 66);
+            gameProgressLabel.Name = "gameProgressLabel";
+            gameProgressLabel.Size = new Size(69, 15);
+            gameProgressLabel.TabIndex = 11;
+            gameProgressLabel.Text = "Postępy gry";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(listHand);
-            Controls.Add(buttonAsk);
+            Controls.Add(gameProgressLabel);
+            Controls.Add(handListBox);
+            Controls.Add(askForCardButton);
             Controls.Add(label3);
             Controls.Add(label2);
-            Controls.Add(button1);
             Controls.Add(label1);
-            Controls.Add(textBooks);
-            Controls.Add(textProgress);
-            Controls.Add(buttonStart);
-            Controls.Add(textName);
+            Controls.Add(completedBooksTextBox);
+            Controls.Add(gameProgressTextBox);
+            Controls.Add(startButton);
+            Controls.Add(playerNameTextBox);
             Name = "Form1";
             Text = "Form1";
             ResumeLayout(false);
@@ -153,15 +153,15 @@
 
         #endregion
 
-        private TextBox textName;
-        private Button buttonStart;
-        private TextBox textProgress;
-        private TextBox textBooks;
+        private TextBox playerNameTextBox;
+        private Button startButton;
+        private TextBox gameProgressTextBox;
+        private TextBox completedBooksTextBox;
         private Label label1;
-        private Button button1;
         private Label label2;
         private Label label3;
-        private Button buttonAsk;
-        private ListBox listHand;
+        private Button askForCardButton;
+        private ListBox handListBox;
+        private Label gameProgressLabel;
     }
 }

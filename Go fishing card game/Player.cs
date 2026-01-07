@@ -3,31 +3,33 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Markup;
 using System.Windows.Forms;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Go_fishing_card_game
 {
     internal class Player
     {
-        public int CardCount { get { return cardsInHand.Count; }  }       
-        private string name;
-        public string Name { get { return name; } }
+        public string Name { get; private set; }
         private Random random;
-        private Deck cardsInHand;
-        private TextBox gameProgressTextBox;
-
-        public Player(String name, Random random, TextBox gameProgressTextBox)
+        private Deck cardsInHand = Deck.CreateEmptyDeck();
+        public int CardCount { get { return cardsInHand.Count; } }
+        public event EventHandler<LostCardsEventArgs>? LostCards;
+        public Player(string name, Random random)
         {
-            this.name = name;
+            
+            this.Name = name;
             this.random = random;
-            this.gameProgressTextBox = gameProgressTextBox;
-            gameProgressTextBox.Text += name + " dołączył do gry\r\n";
         }
-
+        
         public IEnumerable<string> GetCardNames() { return cardsInHand.GetCardNames(); }
         public void TakeCard(Card card) { cardsInHand.Add(card); }
         public Card Peek(int cardNumber) { return cardsInHand.Peek(cardNumber); }
         public void SortHand() { cardsInHand.SortByValue(); }
 
+        protected virtual void OnLostCards(LostCardsEventArgs e)
+        {
+            LostCards?.Invoke(this, e);
+        }
         public IEnumerable<Values> PullOutBooks() {
             List<Values> books = new List<Values>();
             for (int i = 1; i <= 13; i++)
@@ -47,15 +49,15 @@ namespace Go_fishing_card_game
             return books;
         }
         public Values GetRandomCardValue()
-        {
-            Random random = new Random();
+        {;
             return (Values)random.Next((int)Values.Ace, (int)Values.King + 1);
         }
-        public Deck stolenCards(Values value)
+        public Deck LoseCards(Values value)
         {
             Deck deckToReturn = cardsInHand.PullOutValues(value);
             int howMany = deckToReturn.Count;
-            gameProgressTextBox.Text += $"{name} ma {howMany} {Card.Plural(value, howMany)}";
+            if (LostCards != null)
+                OnLostCards(new LostCardsEventArgs(Name, howMany, value));
             return deckToReturn;
         }
 
@@ -67,25 +69,26 @@ namespace Go_fishing_card_game
 
         public void AskForACard(List<Player> players, int myIndex, Deck stock, Values value)
         {
-            gameProgressTextBox.Text += $"{name} pyta, czy ktoś ma {Card.Plural(value, 1)}";
-            List<Player> playersWithoutMe = players;
-            playersWithoutMe.RemoveAt(myIndex);
-            bool anyCardsAdded = false;
+            //gameProgressTextBox.Text += $"{name} pyta, czy ktoś ma {Card.Plural(value, 1)}"; move this to an event handler in Form1
+            
+            bool noCardsAdded = true;
 
-            foreach (Player player in playersWithoutMe)
+            for (int i = 0; i < players.Count; i++)
             {
-                Deck cardsToAdd = stolenCards(value);
+                if (i == myIndex)
+                    continue;
+                Deck cardsToAdd = LoseCards(value);
                 int cardsAddedNum = cardsToAdd.Count;
-                for (int i = 0; i < cardsAddedNum; i++)
+                for (int j = 0; j < cardsAddedNum; j++)
                 {
-                    anyCardsAdded = true;
-                    TakeCard(Peek(i));
+                    noCardsAdded = false;
+                    TakeCard(cardsToAdd.Peek(j));
                 }
             }
-            if (!anyCardsAdded)
+            if (noCardsAdded)
             {
                 TakeCard(stock.Deal());
-                gameProgressTextBox.Text += $"{name} pobrał kartę z talii";
+               // gameProgressTextBox.Text += $"{Name} pobrał kartę z talii";
             }
         }
     }

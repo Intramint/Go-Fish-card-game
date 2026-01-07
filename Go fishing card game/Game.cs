@@ -3,29 +3,49 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace Go_fishing_card_game
 {
     internal class Game
     {
-        private List<Player> players;
-        private Dictionary<Values, Player> books;
+        public List<Player> players;
+        public Dictionary<Values, Player> Books { get; private set; }
         private Deck stock;
-        private TextBox gameProgressTextBox;
+        private TextBox gameProgressTextBox;//move to form1
+        public int PlayerCount { get; private set; }
+        public int StockCardCount { get { return stock.Count; } }
+        public event EventHandler<LostCardsEventArgs> LostCards;
 
-        public Game(string playerName, IEnumerable<string> opponentNames, TextBox gameProgressTextBox)
+        protected virtual void OnLostCards(LostCardsEventArgs e)
+        {
+            LostCards?.Invoke(this, e);
+        }
+        public void player_LostCards(object? sender, LostCardsEventArgs e)
+        {
+            OnLostCards(e);
+        } 
+
+        public Game(IEnumerable<string> playerNames)
         {
             Random random = new Random();
-            this.gameProgressTextBox = gameProgressTextBox;
             players = new List<Player>();
-            players.Add(new Player(playerName, random, gameProgressTextBox));
-            foreach (string player in opponentNames)
-                players.Add(new Player(player, random, gameProgressTextBox));
-            books = new Dictionary<Values, Player>();
-            stock = new Deck();
+            foreach (string playerName in playerNames)
+            {
+                Player player = new Player(playerName, random);
+                players.Add(player);
+                player.LostCards += player_LostCards;
+            }
+            PlayerCount = players.Count;
+            HumanPlayer = players[0];
+            Books = new Dictionary<Values, Player>();
+            stock = Deck.CreateFullDeck();
             Deal();
-            players[0].SortHand();
+            HumanPlayer.SortHand();
+            
         }
+
+        public Player HumanPlayer { get; private set; }
 
         private void Deal() {
             stock.Shuffle();
@@ -33,23 +53,22 @@ namespace Go_fishing_card_game
             {
                 for (int i = 0; i < 5; i++)
                     player.TakeCard(stock.Deal());
-                PullOutBooks(player);
+                pullOutBooks(player);
             }
         }
 
         public bool PlayOneRound(int selectedPlayerCard)
         {
            
-            for (int i = 1; i < players.Count; i++)
+            for (int i = 0; i < players.Count; i++)
             {
                 if (i == 0) {
-                    players[i].AskForACard(players, i, stock, (Values)selectedPlayerCard);
+                    players[i].AskForACard(players, i, stock, HumanPlayer.Peek(selectedPlayerCard).Value);
                 }
                 else
                     players[i].AskForACard(players, i, stock);
 
-               players[i].AskForACard(players, i, stock);
-                if (PullOutBooks(players[i]))
+                if (pullOutBooks(players[i]))
                 {
                     int drawThatMany = Math.Min(5, stock.Count);
                     for (int _ = 0; _ < drawThatMany; _++)
@@ -57,63 +76,66 @@ namespace Go_fishing_card_game
                 }
             }
 
-            players[0].SortHand();
+            HumanPlayer.SortHand();
             if (stock.Count == 0)
             {
-                gameProgressTextBox.Text += "Talia jest pusta. Koniec gry!\r\n";
+                gameProgressTextBox.Text += "Talia jest pusta. Koniec gry!\r\n";//move to form1
                 return true;
             }
             return false;
-
-
         }
 
-        public bool PullOutBooks(Player player)
+        private bool pullOutBooks(Player player)
         {
             foreach (Values value in player.PullOutBooks()) {
-                books.Add(value, player);
+                Books.Add(value, player);
             }
             if (player.CardCount == 0)
                 return true;
             return false;
         }
 
-        public string DescribeBooks()
-        {
-            string description = "";
-            foreach (Values cardValue in books.Keys)
-            {
-                description += $"{books[cardValue].Name} ma grupę {Card.Plural(cardValue, 0)},\r\n " ;
-            }
-            description += ".";
-            return description;
-        }
+
 
         public string GetWinnerName()
         {
-
-        }
-
-        public IEnumerable<string> GetPlayerCardNames()
-        {
-            return players[0].GetCardNames();
-        }
-
-        public string DescribePlayerHands()
-        {
-            string description = "";
-            for (int i = 0; i < players.Count; i++)
+            var playerScores = new Dictionary<Player, int>();
+            foreach (var pair in Books)
             {
-                description += players[i].Name + " ma " + players[i].CardCount;
-                if (players[i].CardCount == 1)
-                    description += " kartę.\r\n";
-                else if (players[i].CardCount == 2 || players[i].CardCount == 3 || players[i].CardCount == 4)
-                    description += " karty.\r\n";
-                else
-                    description += " kart.\r\n";
+               // playerScores.TryGetValue(pair.Value, out int score);
+                playerScores[pair.Value]++;
             }
-            description += $"W talii pozostało kart: {stock.Count}\r\n";
-            return description;
+            List<Player> winners = new List<Player>();
+            int winningScore = 0;
+            int winnerCount = 0;
+            foreach (var pair in playerScores)
+            {
+                if (pair.Value > winningScore)
+                {
+                    winningScore = pair.Value;
+                    winners.Add(pair.Key);
+                    winnerCount = 1;
+                }
+                else if (pair.Value == winningScore) {
+                    winners.Add(pair.Key);
+                    winnerCount++;
+                }
+            }
+            string winnerNames = "";
+            if (winnerCount == 1)
+            {
+                return winners[0].Name;
+            }
+            foreach (var winner in winners.SkipLast(1)) {
+                winnerNames += winner.Name + " i";
+            }
+            winnerNames += winners.Last().Name;
+            return "Remis pomiędzy" + winnerNames;
+
         }
+
+
+
+
     }
 }
