@@ -8,13 +8,13 @@ namespace Go_fishing_card_game
         public Form1()
         {
             InitializeComponent();
+            gameLog = new GameLogger(gameProgressTextBox);
+            booksLog = new GameLogger(completedBooksTextBox);
         }
 
+        private GameLogger gameLog;
+        private GameLogger booksLog;
         private Game game;
-        //public Action<string> LostCards(object sender, EventArgs e) dont use Action
-        //{
-        //    gameProgressTextBox += ;
-        //}
         private void buttonStart_Click(object sender, EventArgs e)
         {
             if (String.IsNullOrEmpty(playerNameTextBox.Text))
@@ -24,10 +24,10 @@ namespace Go_fishing_card_game
             }
             string[] names = { playerNameTextBox.Text, "Janek", "Bartek" };
             game = new Game(names);
-            game.LostCards += game_LostCards;
+            game.MessageCreated += game_MessageCreated;
             foreach (string name in names)
             {
-                gameProgressTextBox.Text += $"{name} do³¹czy³ do gry\r\n";
+                gameLog.Write($"{name} do³¹czy³ do gry");
             }
             startButton.Enabled = false;
             playerNameTextBox.Enabled = false;
@@ -35,14 +35,9 @@ namespace Go_fishing_card_game
             updateForm();
         }
 
-        private void game_LostCards(object? sender, LostCardsEventArgs e)
+        private void game_MessageCreated(object? sender, MessageCreatedEventArgs e)
         {
-            gameProgressTextBox.Text += describeNumberOfThisCardInHand(e.Name, e.NumberOfThisCardInHand, e.CardValue);
-        }
-
-        private string describeNumberOfThisCardInHand(string name, int numberOfThisCardInHand, Values cardValue)
-        {
-            return $"{name} ma {numberOfThisCardInHand} {Card.Plural(cardValue, numberOfThisCardInHand)}\r\n";
+            gameLog.Write(e.Message);
         }
 
         private void updateForm()
@@ -50,53 +45,51 @@ namespace Go_fishing_card_game
             handListBox.Items.Clear();
             foreach (var cardName in game.HumanPlayer.GetCardNames())
                 handListBox.Items.Add(cardName);
-            completedBooksTextBox.Text += describeBooks();
-            gameProgressTextBox.Text += describePlayerHands();
-            gameProgressTextBox.SelectionStart = gameProgressTextBox.Text.Length;
-            gameProgressTextBox.ScrollToCaret();
+            DescribeBooks();
+            DescribePlayerHands();
+            gameProgressTextBox.SelectionStart = gameProgressTextBox.Text.Length; //
+            gameProgressTextBox.ScrollToCaret();                                  // scrolls text to the bottom in case there's too much text
         }
-
-        private string describePlayerHands()
+        
+        private void DescribePlayerHands()
         {
-            string description = "";
+            string description;
             for (int i = 0; i < game.PlayerCount; i++)
             {
+                description = "";
                 description += game.players[i].Name + " ma " + game.players[i].CardCount;
                 if (game.players[i].CardCount == 1)
-                    description += " kartê.\r\n";
+                    description += " kartê.";
                 else if (game.players[i].CardCount == 2 || game.players[i].CardCount == 3 || game.players[i].CardCount == 4)
-                    description += " karty.\r\n";
+                    description += " karty.";
                 else
-                    description += " kart.\r\n";
+                    description += " kart.";
+                gameLog.Write(description);
             }
-            description += $"W talii pozosta³o kart: {game.StockCardCount}\r\n";
-            return description;
+            gameLog.Write($"W talii pozosta³o kart: {game.StockCardCount}");
         }
 
-        private string describeBooks()
+        private void DescribeBooks()
         {
-            string description = "";
+            //booksLog.Clear();
             foreach (Values cardValue in game.Books.Keys)
             {
-                description += $"{game.Books[cardValue].Name} ma grupê {Card.Plural(cardValue, 0)},\r\n ";
+                booksLog.Write($"{game.Books[cardValue].Name} ma grupê {Card.Plural(cardValue, 0)}");
             }
-            description += ".";
-            return description;
         }
 
-        private void buttonAsk_Click(object sender, EventArgs e)
+        private void askForCardButton_Click(object sender, EventArgs e)
         {
-            gameProgressTextBox.Text = "";
             if (handListBox.SelectedIndex < 0)
             {
                 MessageBox.Show("Wybierz kartê.");
                 return;
-                
             }
+            gameLog.Clear();
             if (game.PlayOneRound(handListBox.SelectedIndex))
             {
-                gameProgressTextBox.Text += "Zwyciêzc¹ jest... " + game.GetWinnerName();
-                completedBooksTextBox.Text = describeBooks();
+                gameLog.Write("Zwyciêzc¹ jest... " + game.GetWinnerName());
+                DescribeBooks();
                 askForCardButton.Enabled = false;
             }
             else

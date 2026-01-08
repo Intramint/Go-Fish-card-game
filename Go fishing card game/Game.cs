@@ -12,19 +12,10 @@ namespace Go_fishing_card_game
         public List<Player> players;
         public Dictionary<Values, Player> Books { get; private set; }
         private Deck stock;
-        private TextBox gameProgressTextBox;//move to form1
         public int PlayerCount { get; private set; }
         public int StockCardCount { get { return stock.Count; } }
-        public event EventHandler<LostCardsEventArgs> LostCards;
+        public event EventHandler<MessageCreatedEventArgs> MessageCreated;
 
-        protected virtual void OnLostCards(LostCardsEventArgs e)
-        {
-            LostCards?.Invoke(this, e);
-        }
-        public void player_LostCards(object? sender, LostCardsEventArgs e)
-        {
-            OnLostCards(e);
-        } 
 
         public Game(IEnumerable<string> playerNames)
         {
@@ -34,7 +25,7 @@ namespace Go_fishing_card_game
             {
                 Player player = new Player(playerName, random);
                 players.Add(player);
-                player.LostCards += player_LostCards;
+                player.MessageCreated += Player_MessageCreated;
             }
             PlayerCount = players.Count;
             HumanPlayer = players[0];
@@ -45,6 +36,15 @@ namespace Go_fishing_card_game
             
         }
 
+        protected virtual void OnMessageCreated(MessageCreatedEventArgs e)
+        {
+            MessageCreated?.Invoke(this, e);
+        }
+        private void Player_MessageCreated(object? sender, MessageCreatedEventArgs e)
+        {
+            OnMessageCreated(e);
+        }
+
         public Player HumanPlayer { get; private set; }
 
         private void Deal() {
@@ -53,7 +53,7 @@ namespace Go_fishing_card_game
             {
                 for (int i = 0; i < 5; i++)
                     player.TakeCard(stock.Deal());
-                pullOutBooks(player);
+                PullOutBooks(player);
             }
         }
 
@@ -68,7 +68,7 @@ namespace Go_fishing_card_game
                 else
                     players[i].AskForACard(players, i, stock);
 
-                if (pullOutBooks(players[i]))
+                if (PullOutBooks(players[i]))
                 {
                     int drawThatMany = Math.Min(5, stock.Count);
                     for (int _ = 0; _ < drawThatMany; _++)
@@ -79,13 +79,13 @@ namespace Go_fishing_card_game
             HumanPlayer.SortHand();
             if (stock.Count == 0)
             {
-                gameProgressTextBox.Text += "Talia jest pusta. Koniec gry!\r\n";//move to form1
+                OnMessageCreated(new MessageCreatedEventArgs("Talia jest pusta. Koniec gry!\r\n"));
                 return true;
             }
             return false;
         }
 
-        private bool pullOutBooks(Player player)
+        private bool PullOutBooks(Player player)
         {
             foreach (Values value in player.PullOutBooks()) {
                 Books.Add(value, player);

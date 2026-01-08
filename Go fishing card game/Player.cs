@@ -13,7 +13,7 @@ namespace Go_fishing_card_game
         private Random random;
         private Deck cardsInHand = Deck.CreateEmptyDeck();
         public int CardCount { get { return cardsInHand.Count; } }
-        public event EventHandler<LostCardsEventArgs>? LostCards;
+        public event EventHandler<MessageCreatedEventArgs>? MessageCreated;
         public Player(string name, Random random)
         {
             
@@ -26,9 +26,9 @@ namespace Go_fishing_card_game
         public Card Peek(int cardNumber) { return cardsInHand.Peek(cardNumber); }
         public void SortHand() { cardsInHand.SortByValue(); }
 
-        protected virtual void OnLostCards(LostCardsEventArgs e)
+        protected virtual void OnMessageCreated(MessageCreatedEventArgs e) 
         {
-            LostCards?.Invoke(this, e);
+            MessageCreated?.Invoke(this, e);
         }
         public IEnumerable<Values> PullOutBooks() {
             List<Values> books = new List<Values>();
@@ -48,36 +48,31 @@ namespace Go_fishing_card_game
             }
             return books;
         }
-        public Values GetRandomCardValue()
-        {;
-            return (Values)random.Next((int)Values.Ace, (int)Values.King + 1);
-        }
+
         public Deck LoseCards(Values value)
         {
             Deck deckToReturn = cardsInHand.PullOutValues(value);
             int howMany = deckToReturn.Count;
-            if (LostCards != null)
-                OnLostCards(new LostCardsEventArgs(Name, howMany, value));
+            OnMessageCreated(new MessageCreatedEventArgs($"{Name} ma {howMany} {Card.Plural(value, howMany)}"));
             return deckToReturn;
         }
 
         public void AskForACard(List<Player> players, int myIndex, Deck stock)
         {
-            int value = random.Next(players[myIndex].CardCount);
+            int value = random.Next(players[myIndex].CardCount) + 1;
             AskForACard(players, myIndex, stock, (Values)value);
         }
 
         public void AskForACard(List<Player> players, int myIndex, Deck stock, Values value)
         {
-            //gameProgressTextBox.Text += $"{name} pyta, czy ktoś ma {Card.Plural(value, 1)}"; move this to an event handler in Form1
-            
+            OnMessageCreated(new MessageCreatedEventArgs($"{Name} pyta, czy ktoś ma {Card.Plural(value, 1)}"));
             bool noCardsAdded = true;
 
             for (int i = 0; i < players.Count; i++)
             {
                 if (i == myIndex)
                     continue;
-                Deck cardsToAdd = LoseCards(value);
+                Deck cardsToAdd = players[i].LoseCards(value);
                 int cardsAddedNum = cardsToAdd.Count;
                 for (int j = 0; j < cardsAddedNum; j++)
                 {
@@ -88,8 +83,9 @@ namespace Go_fishing_card_game
             if (noCardsAdded)
             {
                 TakeCard(stock.Deal());
-               // gameProgressTextBox.Text += $"{Name} pobrał kartę z talii";
+                OnMessageCreated(new MessageCreatedEventArgs($"{Name} pobrał kartę z talii"));
             }
+            OnMessageCreated(new MessageCreatedEventArgs(""));//adds a new line
         }
     }
 }

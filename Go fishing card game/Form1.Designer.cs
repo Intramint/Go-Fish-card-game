@@ -43,6 +43,7 @@
             // playerNameTextBox
             // 
             playerNameTextBox.Location = new Point(24, 24);
+            playerNameTextBox.MaxLength = 21;
             playerNameTextBox.Name = "playerNameTextBox";
             playerNameTextBox.Size = new Size(244, 23);
             playerNameTextBox.TabIndex = 0;
@@ -59,16 +60,17 @@
             // 
             // gameProgressTextBox
             // 
+            gameProgressTextBox.BackColor = SystemColors.Control;
             gameProgressTextBox.Location = new Point(24, 77);
             gameProgressTextBox.Multiline = true;
             gameProgressTextBox.Name = "gameProgressTextBox";
             gameProgressTextBox.ReadOnly = true;
-            gameProgressTextBox.Size = new Size(527, 245);
+            gameProgressTextBox.Size = new Size(527, 294);
             gameProgressTextBox.TabIndex = 3;
             // 
             // completedBooksTextBox
             // 
-            completedBooksTextBox.Location = new Point(24, 350);
+            completedBooksTextBox.Location = new Point(24, 392);
             completedBooksTextBox.Multiline = true;
             completedBooksTextBox.Name = "completedBooksTextBox";
             completedBooksTextBox.ReadOnly = true;
@@ -87,7 +89,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(24, 332);
+            label2.Location = new Point(24, 374);
             label2.Name = "label2";
             label2.Size = new Size(39, 15);
             label2.TabIndex = 7;
@@ -105,20 +107,20 @@
             // askForCardButton
             // 
             askForCardButton.Enabled = false;
-            askForCardButton.Location = new Point(557, 415);
+            askForCardButton.Location = new Point(557, 457);
             askForCardButton.Name = "askForCardButton";
             askForCardButton.Size = new Size(231, 23);
             askForCardButton.TabIndex = 9;
             askForCardButton.Text = "Zażądaj karty";
             askForCardButton.UseVisualStyleBackColor = true;
-            askForCardButton.Click += buttonAsk_Click;
+            askForCardButton.Click += askForCardButton_Click;
             // 
             // handListBox
             // 
             handListBox.FormattingEnabled = true;
             handListBox.Location = new Point(557, 27);
             handListBox.Name = "handListBox";
-            handListBox.Size = new Size(231, 379);
+            handListBox.Size = new Size(231, 424);
             handListBox.TabIndex = 10;
             // 
             // gameProgressLabel
@@ -134,7 +136,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(800, 492);
             Controls.Add(gameProgressLabel);
             Controls.Add(handListBox);
             Controls.Add(askForCardButton);
