@@ -71,7 +71,7 @@ namespace Go_fishing_card_game
 
         private void DescribeBooks()
         {
-            //booksLog.Clear();
+            booksLog.Clear();
             foreach (Values cardValue in game.Books.Keys)
             {
                 booksLog.Write($"{game.Books[cardValue].Name} ma grupê {Card.Plural(cardValue, 0)}");

@@ -102,7 +102,7 @@ namespace Go_fishing_card_game
             var playerScores = new Dictionary<Player, int>();
             foreach (var pair in Books)
             {
-               // playerScores.TryGetValue(pair.Value, out int score);
+                playerScores.TryGetValue(pair.Value, out int score);
                 playerScores[pair.Value]++;
             }
             List<Player> winners = new List<Player>();
