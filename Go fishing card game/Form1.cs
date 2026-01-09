@@ -49,7 +49,7 @@ namespace Go_fishing_card_game
         private void DescribeBooks()
         {
             booksLog.Clear();
-            foreach (CardValues cardValue in game.Books.Keys)
+            foreach (CardValues cardValue in game.Books.Keys) //change to react to a BookScored event
             {
                 booksLog.Write($"{game.Books[cardValue].Name} ma grupê {Card.Plural(cardValue, 0)}");
             }
@@ -85,8 +85,9 @@ namespace Go_fishing_card_game
                 MessageBox.Show("Wpisz swoje imiê", "Nie mo¿na jeszcze rozpocz¹æ gry.");
                 return;
             }
-            string[] names = { playerNameTextBox.Text, "Janek", "Bartek" };
-            game = new Game(names);
+            string humanName = playerNameTextBox.Text;
+            string[] opponentNames = { "Janek", "Bartek" };
+            game = new Game(humanName, opponentNames);
             game.MessageCreated += game_MessageCreated;
             foreach (string name in names)
             {

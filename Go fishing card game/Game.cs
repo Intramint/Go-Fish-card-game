@@ -7,56 +7,69 @@ namespace Go_fishing_card_game
 {
     internal class Game
     {
-        public Game(IEnumerable<string> playerNames)
+        public Game(string humanName, IEnumerable<string> opponentNames)
         {
-            Random random = new Random();
+            Random random = new();
             players = new List<Player>();
-            foreach (string playerName in playerNames)
+            drawPile = new(random);
+
+            HumanPlayer = new HumanPlayer(humanName, drawPile);
+            players.Add(HumanPlayer);
+            HumanPlayer.MessageCreated += Player_MessageCreated;
+            foreach (string opponentName in opponentNames)
             {
-                Player player = new Player(playerName, random);
+                ComputerPlayer player = new(opponentName, drawPile, random);
                 players.Add(player);
                 player.MessageCreated += Player_MessageCreated;
             }
+
             PlayerCount = players.Count;
-            HumanPlayer = players[0];
             Books = new Dictionary<CardValues, Player>();
-            stock = Deck.CreateEmptyDeck();
-            Deck.FillDeck(stock);
-            StartingDeal();
+            //todo: need to check for any books in starting hands
+
             HumanPlayer.SortHand();
         }
 
         public List<Player> players;
-        public int PlayerCount { get; private set; }
-        public Player HumanPlayer { get; private set; }
-        public Dictionary<CardValues, Player> Books { get; private set; }
-        public int StockCardCount { get { return stock.Count; } }
+        public int PlayerCount { get; }
+        public HumanPlayer HumanPlayer { get; }
+        public Dictionary<CardValues, Player> Books { get; }
+        public int StockCardCount { get { return drawPile.Count; } }
         public event EventHandler<MessageCreatedEventArgs> MessageCreated;
 
-        private Deck stock;
+        private Deck drawPile;
 
         public bool PlayOneRound(int selectedPlayerCard)
         {
-
-            for (int i = 0; i < players.Count; i++)
+            HumanPlayer.SetChosenCardValue(selectedPlayerCard);
+            foreach (Player player in players)
             {
-                if (i == 0)
+                CardValues cardValue = player.GetChosenCardValue();
+                
+                if (player.AskForACard(players, cardValue))
                 {
-                    players[i].AskForACard(players, i, stock, HumanPlayer.Peek(selectedPlayerCard).Value);
+                    if (player.HasBook(cardValue) //add BookScored event, so the books listbox doesnt need to get updated on each turn
+                    {
+                        if (player.)
+                    }
                 }
                 else
-                    players[i].AskForACard(players, i, stock);
-
-                if (ScoreBooks(players[i]))
                 {
-                    int drawThatMany = Math.Min(5, stock.Count);//change to overloaded Draw() that draws multiple
+                    if (!player.Draw(drawPile))
+                        //game end event here
+                }
+
+
+                if (players[i].TryScoreBook()) //change this. 
+                {
+                    int drawThatMany = Math.Min(5, drawPile.Count);//change to overloaded Draw() that draws multiple
                     for (int _ = 0; _ < drawThatMany; _++)
-                        players[i].ReceiveCard(stock.DealTop());//change to Draw()
+                        players[i].ReceiveCard(drawPile.DealTop());//change to Draw()
                 }
             }
 
             HumanPlayer.SortHand();
-            if (stock.Count == 0)
+            if (drawPile.Count == 0)
             {
                 OnMessageCreated(new MessageCreatedEventArgs("Talia jest pusta. Koniec gry!\r\n"));
                 return true;
@@ -99,28 +112,6 @@ namespace Go_fishing_card_game
             }
             winnerNames += winners.Last().Name;
             return "Remis pomiędzy" + winnerNames;
-        }
-
-        private void StartingDeal()//should give 5 to each player
-        {
-            foreach (Player player in players)
-            {
-                for (int i = 0; i < 5; i++)
-                    player.ReceiveCard(stock.DealTop());
-                ScoreBooks(player);
-            }
-        }
-
-        private bool ScoreBooks(Player player) //change to try all players
-        {
-            if (player.)
-            foreach (CardValues value in player.ScoreBook())
-            {
-                Books.Add(value, player);
-            }
-            if (player.CardCount == 0)
-                return true;
-            return false;
         }
 
         protected virtual void OnMessageCreated(MessageCreatedEventArgs e)

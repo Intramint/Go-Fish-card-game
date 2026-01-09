@@ -12,7 +12,15 @@ namespace Go_fishing_card_game
     {
         public int Count { get { return cards.Count; } }
         public List<Card> cards = new();
-
+        public bool IsEmpty
+        {
+            get
+            {
+                if (cards.Count == 0)
+                    return true;
+                return false;
+            }
+        }
         public void Add(Card card)
         {
             cards.Add(card);
@@ -29,14 +37,8 @@ namespace Go_fishing_card_game
                 cards.Remove(card);
         }
 
-        public bool IsEmpty()
-        {
-            if (cards.Count == 0)
-                return true;
-            return false;
-        }
 
-        public bool TryGetBook(CardValues cardValue)
+        public bool HasBook(CardValues cardValue)
         {
             int NumberOfCards = 0;
             foreach (Card card in cards)
@@ -45,23 +47,14 @@ namespace Go_fishing_card_game
                 {
                     NumberOfCards++;
                     if (NumberOfCards == 4)
+                    {
                         return true;
+                    }
                 }
                 else
                     NumberOfCards = 0;     
             }
             return false;
-        }
-
-
-
-        private IEnumerable PullOutValues(CardValues value)
-        {
-            Deck deckToReturn = new();
-            for (int i = cards.Count - 1; i >= 0; i--)
-                if (cards[i].Value == value)
-                    deckToReturn.Add(Deal(i));
-            return deckToReturn;
         }
 
         public IEnumerable<string> GetCardNames()
