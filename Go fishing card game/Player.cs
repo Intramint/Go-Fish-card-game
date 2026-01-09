@@ -1,78 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows.Markup;
-using System.Windows.Forms;
-using System.Diagnostics.CodeAnalysis;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+//using System.Diagnostics.CodeAnalysis;
 
 namespace Go_fishing_card_game
 {
-    internal class Player
+    internal class Player //make abstract and split to human and computer
     {
-        public string Name { get; private set; }
-        private Random random;
-        private Deck cardsInHand = Deck.CreateEmptyDeck();
-        public int CardCount { get { return cardsInHand.Count; } }
-        public event EventHandler<MessageCreatedEventArgs>? MessageCreated;
-        public Player(string name, Random random)
+        public Player(string name, Deck drawPile)
         {
-            
             this.Name = name;
-            this.random = random;
+            hand = new();
+            TryDraw(drawPile, 5);
         }
-        
-        public IEnumerable<string> GetCardNames() { return cardsInHand.GetCardNames(); }
-        public void TakeCard(Card card) { cardsInHand.Add(card); }
-        public Card Peek(int cardNumber) { return cardsInHand.Peek(cardNumber); }
-        public void SortHand() { cardsInHand.SortByValue(); }
 
-        protected virtual void OnMessageCreated(MessageCreatedEventArgs e) 
+        public string Name { get; private set; }
+        public int CardCount { get { return hand.Count; } }
+        public event EventHandler<MessageCreatedEventArgs>? MessageCreated;
+
+        private Hand hand;
+        public bool TryDraw(Deck sourceDeck, int cardCount = 1)
         {
-            MessageCreated?.Invoke(this, e);
-        }
-        public IEnumerable<Values> PullOutBooks() {
-            List<Values> books = new List<Values>();
-            for (int i = 1; i <= 13; i++)
-            {
-                Values value = (Values)i;
-                int howMany = 0;
-                for (int card = 0; card < cardsInHand.Count; card++)
-                    if (cardsInHand.Peek(card).Value == value)
-                        howMany++;
-                if (howMany == 4)
-                {
-                    books.Add(value);
-                    for (int card = cardsInHand.Count - 1; card >= 0; card--)
-                        cardsInHand.Deal(card);
-                }
+            for (int i = 0; i < cardCount; i++) {
+                hand.Add(sourceDeck.DealTop());
+                if (sourceDeck.IsEmpty())
+                    return false;
             }
-            return books;
+            return true;
         }
 
-        public Deck LoseCards(Values value)
+        public void ReceiveCards(IEnumerable<Card> cards)
         {
-            Deck deckToReturn = cardsInHand.PullOutValues(value);
-            int howMany = deckToReturn.Count;
-            OnMessageCreated(new MessageCreatedEventArgs($"{Name} ma {howMany} {Card.Plural(value, howMany)}"));
-            return deckToReturn;
+            hand.Add(cards);
+        }
+
+        public IEnumerable<Card> GiveCardsWithValue(CardValues cardValue)
+        {
+            var cardsToGive = new List<Card>();
+            foreach (Card card in hand)
+            {
+                if (card.Value == cardValue)
+                    cardsToGive.Add(card);
+            }
+            return cardsToGive;
+        }
+
+        public bool HasValue(CardValues cardValue)
+        {
+            return hand.HasValue(cardValue);
+        }
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public IEnumerable<string> GetCardNames()
+        {
+            return hand.GetCardNames();
+        }
+
+        public void SortHand()
+        {
+            hand.SortByValue(); 
+        }
+
+        public bool TryScoreBook(CardValues cardValue)
+        {
+            return hand.TryGetBook(cardValue);
         }
 
         public void AskForACard(List<Player> players, int myIndex, Deck stock)
         {
             int value = random.Next(players[myIndex].CardCount) + 1;
-            AskForACard(players, myIndex, stock, (Values)value);
+            AskForACard(players, myIndex, stock, (CardValues)value);
         }
 
-        public void AskForACard(List<Player> players, int myIndex, Deck stock, Values value)
+        public void AskForACard(List<Player> players, int myIndex, Deck stock, CardValues value)
         {
             OnMessageCreated(new MessageCreatedEventArgs($"{Name} pyta, czy ktoś ma {Card.Plural(value, 1)}"));
             bool noCardsAdded = true;
 
             for (int i = 0; i < players.Count; i++)
             {
-                if (i == myIndex)
+                if (i == myIndex)//change to use containValue
                     continue;
-                Deck cardsToAdd = players[i].LoseCards(value);
+                Deck cardsToAdd = players[i].GiveCards(value);
                 int cardsAddedNum = cardsToAdd.Count;
                 for (int j = 0; j < cardsAddedNum; j++)
                 {
@@ -82,10 +95,15 @@ namespace Go_fishing_card_game
             }
             if (noCardsAdded)
             {
-                TakeCard(stock.Deal());
+                ReceiveCard(stock.DealTop());
                 OnMessageCreated(new MessageCreatedEventArgs($"{Name} pobrał kartę z talii"));
             }
             OnMessageCreated(new MessageCreatedEventArgs(""));//adds a new line
+        }
+
+        protected virtual void OnMessageCreated(MessageCreatedEventArgs e)
+        {
+            MessageCreated?.Invoke(this, e);
         }
     }
 }

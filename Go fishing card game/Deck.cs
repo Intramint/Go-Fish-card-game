@@ -1,49 +1,50 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Go_fishing_card_game
 {
-    internal class Deck
+    public class Deck
     {
-        private List<Card> cards = new();
-        private Random random = new Random();
-        private sealed class FactoryToken { }
-        private static readonly FactoryToken token = new();
-
-        private Deck(FactoryToken _) { }
-
-        public static Deck CreateFullDeck()
+        public Deck(Random random) 
         {
-            var deck = new Deck(token);
+            FillDeck();
+            Shuffle(random);
+        }
+        public int Count { get { return cards.Count; } }
+
+        private List<Card> cards = new();
+
+
+        public override string ToString()
+        {
+            return $"Cards in deck: {Count}";
+        }
+
+        public Card DealTop()
+        {
+            Card card = cards[0];
+            cards.RemoveAt(0);
+            return card;
+        }
+
+        public bool IsEmpty()
+        {
+            if (cards.Count == 0)
+                return true;
+            return false;
+        }
+
+        private void FillDeck()
+        {
             for (int suit = 0; suit <= 3; suit++)
                 for (int value = 1; value <= 13; value++)
-                    deck.Add(new Card((Suits)suit, (Values)value));
-            return deck;
+                    cards.Add(new Card((Suits)suit, (CardValues)value));
         }
-
-        public static Deck CreateEmptyDeck()
+        private void Shuffle(Random random)
         {
-            return new Deck(token); 
-        }
-
-        public int Count { get { return cards.Count; } }
-        public void Add(Card cardToAdd) { cards.Add(cardToAdd); }
-        public Card Deal(int index)
-        {
-            Card CardToDeal = cards[index];
-            cards.RemoveAt(index);
-            return CardToDeal;
-        }
-
-        public Card Deal()
-        {
-            return Deal(0);
-        }
-
-        public void Shuffle()
-        {
-            List<Card> NewCards = new List<Card>();
+            List<Card> NewCards = new();
             while (cards.Count > 0)
             {
                 int CardToMove = random.Next(cards.Count);
@@ -51,54 +52,6 @@ namespace Go_fishing_card_game
                 cards.RemoveAt(CardToMove);
             }
             cards = NewCards;
-        }
-
-        public IEnumerable<string> GetCardNames()
-        {
-            string[] CardNames = new string[cards.Count];
-            for (int i = 0; i < cards.Count; i++)
-                CardNames[i] = cards[i].Name;
-            return CardNames;
-        }
-
-        public Card Peek(int cardNumber)
-        {
-            return cards[cardNumber];
-        }
-
-
-
-        public bool ContainsValue(Values value)
-        {
-            foreach (Card card in cards)
-                if (card.Value == value)
-                    return true;
-            return false;
-        }
-
-        public Deck PullOutValues(Values value)
-        {
-            Deck deckToReturn = CreateEmptyDeck();
-            for (int i = cards.Count - 1; i >= 0; i--)
-                if (cards[i].Value == value)
-                    deckToReturn.Add(Deal(i));
-            return deckToReturn;
-        }
-
-        public bool HasBook(Values value)
-        {
-            int NumberOfCards = 0;
-            foreach (Card card in cards)
-                if (card.Value == value)
-                    NumberOfCards++;
-            if (NumberOfCards == 4)
-                return true;
-            else
-                return false;
-        }
-        public void SortByValue()
-        {
-            cards.Sort(new CardComparer_byValue());
         }
     }
 }
