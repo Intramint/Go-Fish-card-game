@@ -1,0 +1,8 @@
+publisher: if the event needs to pass data, then create a new class that inherits from EventArgs, eg. called ClickedEventArgs
+publisher class: declare an EventHandler object. if you pass data then use eg. EventHandler<ClickedEventArgs>. It's named something like ProcessCompleted
+publisher: write a protected virtual void method with parameters (EventArgs e) or a class inherited from EventArgs. In it invoke the EventHandler using (this, e) as parameters. Method name is something like OnProcessCompleted
+subscriber: to subscribe, add the below method to the declared EventHandler object from publisher class, in the constructor, using +=. after writing +=, IDE should help with the rest of the steps.
+subscriber: write a void method with parameters (object sender, EventArgs e). this contains how to react when the event happens. method name is  the name of the reference to the publisher class, then underscore, then name of the EventHandler object from the publisher class eg. startButton_Clicked
+
+
+
