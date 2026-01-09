@@ -21,14 +21,13 @@ namespace Go_fishing_card_game
         public event EventHandler<MessageCreatedEventArgs>? MessageCreated;
 
         protected Hand hand { get; }
-        public bool Draw(Deck sourceDeck, int cardCount = 1)
+        public void Draw(Deck sourceDeck, int cardCount = 1)
         {
             for (int i = 0; i < cardCount; i++) {
                 hand.Add(sourceDeck.DealTop());
                 if (sourceDeck.IsEmpty())
-                    return false;
+                    return;
             }
-            return true;
         }
 
         public void ReceiveCards(IEnumerable<Card> cards)

@@ -50,12 +50,12 @@ namespace Go_fishing_card_game
                 {
                     if (player.HasBook(cardValue) //add BookScored event, so the books listbox doesnt need to get updated on each turn
                     {
-                        if (player.)
+                       
                     }
                 }
                 else
                 {
-                    if (!player.Draw(drawPile))
+                    if (drawPile.IsEmpty())
                         //game end event here
                 }
 

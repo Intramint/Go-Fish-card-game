@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\admin\\source\\repos\\Go fishing card game\\Go fishing card game\\Go fishing card game.csproj",
+      "projectUniqueName": "C:\\Users\\admin\\Desktop\\Go fishing card game\\Go fishing card game\\Go fishing card game.csproj",
       "projectName": "Go fishing card game",
-      "projectPath": "C:\\Users\\admin\\source\\repos\\Go fishing card game\\Go fishing card game\\Go fishing card game.csproj",
+      "projectPath": "C:\\Users\\admin\\Desktop\\Go fishing card game\\Go fishing card game\\Go fishing card game.csproj",
       "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\admin\\source\\repos\\Go fishing card game\\Go fishing card game\\obj\\",
+      "outputPath": "C:\\Users\\admin\\Desktop\\Go fishing card game\\Go fishing card game\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

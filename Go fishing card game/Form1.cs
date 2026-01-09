@@ -89,7 +89,7 @@ namespace Go_fishing_card_game
             string[] opponentNames = { "Janek", "Bartek" };
             game = new Game(humanName, opponentNames);
             game.MessageCreated += game_MessageCreated;
-            foreach (string name in names)
+            foreach (string name in opponentNames)
             {
                 gameLog.Write($"{name} do³¹czy³ do gry");
             }
