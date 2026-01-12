@@ -28,7 +28,7 @@ namespace Go_fishing_card_game
             PlayerCount = players.Count;
 
             Books = new Dictionary<CardValues, Player>();
-            dealCards();
+            DealCards();
 
             HumanPlayer.SortHand();
         }
@@ -39,6 +39,7 @@ namespace Go_fishing_card_game
         public Dictionary<CardValues, Player> Books { get; } //might be able to change later to just storing how many books each player has instead of which books they have
         public int StockCardCount { get { return drawPile.Count; } }
         public event EventHandler<MessageCreatedEventArgs> MessageCreated;
+        public event EventHandler<GameEndedEventArgs> GameEnded;
 
         private Deck drawPile;
         private readonly static int bookSize = 4;
@@ -52,7 +53,7 @@ namespace Go_fishing_card_game
 
                 if (AskEveryoneForACard(player, cardValue))
                 {
-                    if (hasThisBook(player, cardValue))
+                    if (HasThisBook(player, cardValue))
                     {
                         ScoreBook(player, cardValue);
                     }
@@ -103,10 +104,7 @@ namespace Go_fishing_card_game
             return "Remis pomiędzy" + winnerNames;
         }
 
-        protected virtual void OnMessageCreated(MessageCreatedEventArgs e)
-        {
-            MessageCreated?.Invoke(this, e);
-        }
+
 
         private void DrawForPlayer(Player player, int count = 1)
         {
@@ -115,16 +113,25 @@ namespace Go_fishing_card_game
             {
                 Card drawnCard = drawPile.DealTop();
                 player.ReceiveCards(drawnCard);
-                if (hasThisBook(player, drawnCard.Value))
+                if (HasThisBook(player, drawnCard.Value))
                     ScoreBook(player, drawnCard.Value);
             }
             if (drawPile.IsEmpty)
             {
-                //end game event
+                OnGameEnded(new GameEndedEventArgs(GetWinnerName())); //to change
             }
         }
 
-        private void dealCards()
+        protected virtual void OnGameEnded (GameEndedEventArgs e)
+        {
+            GameEnded?.Invoke(this, e);
+        }
+
+        protected virtual void OnMessageCreated(MessageCreatedEventArgs e)
+        {
+            MessageCreated?.Invoke(this, e);
+        }
+        private void DealCards()
         {
             foreach (Player player in players)
             {
@@ -132,14 +139,11 @@ namespace Go_fishing_card_game
             }
         }
 
-        private bool hasThisBook(Player player, CardValues cardValue)
+        private bool HasThisBook(Player player, CardValues cardValue)
         {
             return player.FindMatchingValues(cardValue, bookSize);
         }
             
-            //draw
-            //checkbooks
-            //check for game end
 
         private void ScoreBook (Player player, CardValues cardValue)
         {

@@ -78,6 +78,11 @@ namespace Go_fishing_card_game
                 updateForm();
         }
 
+        private void game_GameEnded(object? sender, GameEndedEventArgs e)
+        {
+
+        }
+
         private void buttonStart_Click(object sender, EventArgs e)
         {
             if (String.IsNullOrEmpty(playerNameTextBox.Text))
@@ -89,6 +94,7 @@ namespace Go_fishing_card_game
             string[] opponentNames = { "Janek", "Bartek" };
             game = new Game(humanName, opponentNames);
             game.MessageCreated += game_MessageCreated;
+            game.GameEnded += game_GameEnded;
             foreach (string name in opponentNames)
             {
                 gameLog.Write($"{name} do³¹czy³ do gry");
