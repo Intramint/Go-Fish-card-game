@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Text;
 //using System.Numerics;
@@ -16,6 +17,7 @@ namespace Go_fishing_card_game
             HumanPlayer = new HumanPlayer(humanName, drawPile);
             players.Add(HumanPlayer);
             HumanPlayer.MessageCreated += Player_MessageCreated;
+
             foreach (string opponentName in opponentNames)
             {
                 ComputerPlayer player = new(opponentName, drawPile, random);
@@ -24,8 +26,9 @@ namespace Go_fishing_card_game
             }
 
             PlayerCount = players.Count;
+
             Books = new Dictionary<CardValues, Player>();
-            //todo: need to check for any books in starting hands
+            dealCards();
 
             HumanPlayer.SortHand();
         }
@@ -38,6 +41,7 @@ namespace Go_fishing_card_game
         public event EventHandler<MessageCreatedEventArgs> MessageCreated;
 
         private Deck drawPile;
+        private readonly static int bookSize = 4;
 
         public bool PlayOneRound(int selectedPlayerCard)
         {
@@ -48,24 +52,13 @@ namespace Go_fishing_card_game
 
                 if (AskEveryoneForACard(player, cardValue))
                 {
-                    if (player.HasBook(cardValue)) //add BookScored event, so the books listbox doesnt need to get updated on each turn
+                    if (hasThisBook(player, cardValue))
                     {
-                        player.DiscardBook(cardValue);
-                        Books.Add(cardValue, player);
-                        //BookScored event
-                        if (player.HasEmptyHand)
-                            player.Draw(drawPile, 5);
+                        ScoreBook(player, cardValue);
                     }
                 }
                 else
-                {
-                    player.Draw(drawPile);
-                    if (drawPile.IsEmpty)
-                    {
-                        //game end event here
-                        return true;
-                    }
-                }
+                    DrawForPlayer(player);
             }
 
             HumanPlayer.SortHand();
@@ -100,7 +93,7 @@ namespace Go_fishing_card_game
             string winnerNames = "";
             if (winnerCount == 1)
             {
-                return winners[0].Name;
+                return winners[0].Name;//seems incorrect
             }
             foreach (var winner in winners.SkipLast(1))
             {
@@ -115,6 +108,49 @@ namespace Go_fishing_card_game
             MessageCreated?.Invoke(this, e);
         }
 
+        private void DrawForPlayer(Player player, int count = 1)
+        {
+
+            for (int i = 0; i < Math.Min(count, drawPile.Count); i++)
+            {
+                Card drawnCard = drawPile.DealTop();
+                player.ReceiveCards(drawnCard);
+                if (hasThisBook(player, drawnCard.Value))
+                    ScoreBook(player, drawnCard.Value);
+            }
+            if (drawPile.IsEmpty)
+            {
+                //end game event
+            }
+        }
+
+        private void dealCards()
+        {
+            foreach (Player player in players)
+            {
+                DrawForPlayer(player, 5);
+            }
+        }
+
+        private bool hasThisBook(Player player, CardValues cardValue)
+        {
+            return player.FindMatchingValues(cardValue, bookSize);
+        }
+            
+            //draw
+            //checkbooks
+            //check for game end
+
+        private void ScoreBook (Player player, CardValues cardValue)
+        {
+            player.RemoveCardsOfValue(cardValue);
+            Books.Add(cardValue, player);
+            //add BookScored event, so the books listbox doesnt need to get updated on each turn
+            if (player.HasEmptyHand)
+                DrawForPlayer(player, 5);
+            //event
+        }
+
         private bool AskEveryoneForACard (Player asker, CardValues cardValue)
         {
             bool anyCardReceived = false;
@@ -126,15 +162,6 @@ namespace Go_fishing_card_game
                     anyCardReceived = true;
             }
             return anyCardReceived;
-        }
-
-        private void checkForGameEnd()
-        {
-            if (drawPile.IsEmpty)
-            {
-                //game end event
-            }
-                return;
         }
 
         private void Player_MessageCreated(object? sender, MessageCreatedEventArgs e)

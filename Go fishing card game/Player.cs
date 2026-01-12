@@ -12,7 +12,6 @@ namespace Go_fishing_card_game
         {
             Name = name;
             hand = new();
-            Draw(drawPile, 5);      
         }
 
         public string Name { get; }
@@ -21,14 +20,15 @@ namespace Go_fishing_card_game
         public event EventHandler<MessageCreatedEventArgs>? MessageCreated;
 
         protected Hand hand { get; }
-        public void Draw(Deck sourceDeck, int cardCount = 1)
-        {
-            for (int i = 0; i < cardCount; i++) {
-                hand.Add(sourceDeck.DealTop());
-                if (sourceDeck.IsEmpty)
-                    return;
-            }
-        }
+        //public void Draw(Deck sourceDeck, int cardCount = 1)
+        //{
+        //    for (int i = 0; i < cardCount; i++)
+        //    {
+        //        hand.Add(sourceDeck.DealTop());
+        //        if (sourceDeck.IsEmpty)
+        //            return;
+        //    }
+        //}
 
         public void ReceiveCards(IEnumerable<Card> cards)
         {
@@ -54,7 +54,7 @@ namespace Go_fishing_card_game
 
         public bool HasValue(CardValues cardValue)
         {
-            return hand.HasValue(cardValue);
+            return hand.FindMatchingValues(cardValue, 1);
         }
         public override string ToString()
         {
@@ -65,14 +65,18 @@ namespace Go_fishing_card_game
         {
             return hand.GetCardNames();
         }
-
-        public bool HasBook(CardValues cardValue) 
+        public bool FindMatchingValues(CardValues cardValue, int count)
         {
-            return hand.HasBook(cardValue);  //game.cs should register the new book, tell player to discard it and to draw 5 if hand is empty
+            return hand.FindMatchingValues(cardValue, count);
         }
 
-  
-        public void DiscardBook(CardValues cardValue)
+        public CardValues? FindMatchingValues(int count)
+        {
+            return hand.FindMatchingValues(count);
+        }
+
+
+        public void RemoveCardsOfValue(CardValues cardValue)
         {
             List<Card> cardsToDiscard = new();
             foreach (Card card in hand)

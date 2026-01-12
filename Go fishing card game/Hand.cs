@@ -36,26 +36,7 @@ namespace Go_fishing_card_game
             foreach (Card card in cardsToRemove)
                 cards.Remove(card);
         }
-
-
-        public bool HasBook(CardValues cardValue)
-        {
-            int NumberOfCards = 0;
-            foreach (Card card in cards)
-            {
-                if (card.Value == cardValue)
-                {
-                    NumberOfCards++;
-                    if (NumberOfCards == 4)
-                    {
-                        return true;
-                    }
-                }
-                else
-                    NumberOfCards = 0;     
-            }
-            return false;
-        }
+       
 
         public IEnumerable<string> GetCardNames()
         {
@@ -65,12 +46,43 @@ namespace Go_fishing_card_game
             return CardNames;
         }
 
-        public bool HasValue(CardValues value)
+        public bool FindMatchingValues(CardValues value, int cardsNeeded)
         {
+            int counter = 0;
             foreach (var card in this)
                 if (card.Value == value)
-                    return true;
+                {
+                    counter++;
+                    if (counter == cardsNeeded)
+                        return true;
+                }
             return false;
+        }
+
+        public CardValues? FindMatchingValues(int cardsNeeded)
+        {
+            if (Count < cardsNeeded)
+                return null;
+
+            List<Card> copiedHand = new();
+            copiedHand.AddRange(cards);
+            while (copiedHand.Any())
+            {
+                int counter = 0;
+                var searchedValue = copiedHand[0].Value;
+                copiedHand.RemoveAt(0);
+                foreach (var card in copiedHand)
+                {
+                    if (card.Value == searchedValue)
+                    {
+                        counter++;
+                        copiedHand.Remove(card);
+                    }
+                    if (counter == cardsNeeded)
+                        return card.Value;
+                }
+            }
+            return null;
         }
 
         public void SortByValue()
