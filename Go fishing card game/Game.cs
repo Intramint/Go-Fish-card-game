@@ -40,6 +40,7 @@ namespace Go_fishing_card_game
         public int StockCardCount { get { return drawPile.Count; } }
         public event EventHandler<MessageCreatedEventArgs> MessageCreated;
         public event EventHandler<GameEndedEventArgs> GameEnded;
+        public event EventHandler<BookScoredEventArgs> BookScored;
 
         private Deck drawPile;
         private readonly static int bookSize = 4;
@@ -122,6 +123,10 @@ namespace Go_fishing_card_game
             }
         }
 
+        protected virtual void OnBookScored (BookScoredEventArgs e)
+        {
+            BookScored?.Invoke(this, e);
+        }
         protected virtual void OnGameEnded (GameEndedEventArgs e)
         {
             GameEnded?.Invoke(this, e);

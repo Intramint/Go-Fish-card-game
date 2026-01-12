@@ -83,6 +83,11 @@ namespace Go_fishing_card_game
 
         }
 
+        private void game_BookScored(object? sender, BookScoredEventArgs e)
+        {
+
+        }
+
         private void buttonStart_Click(object sender, EventArgs e)
         {
             if (String.IsNullOrEmpty(playerNameTextBox.Text))
@@ -90,11 +95,15 @@ namespace Go_fishing_card_game
                 MessageBox.Show("Wpisz swoje imiê", "Nie mo¿na jeszcze rozpocz¹æ gry.");
                 return;
             }
+            
             string humanName = playerNameTextBox.Text;
             string[] opponentNames = { "Janek", "Bartek" };
             game = new Game(humanName, opponentNames);
+
             game.MessageCreated += game_MessageCreated;
             game.GameEnded += game_GameEnded;
+            game.BookScored += game_BookScored;
+
             foreach (string name in opponentNames)
             {
                 gameLog.Write($"{name} do³¹czy³ do gry");
