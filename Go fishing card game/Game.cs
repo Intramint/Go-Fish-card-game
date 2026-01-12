@@ -33,7 +33,7 @@ namespace Go_fishing_card_game
         public List<Player> players;
         public int PlayerCount { get; }
         public HumanPlayer HumanPlayer { get; }
-        public Dictionary<CardValues, Player> Books { get; }
+        public Dictionary<CardValues, Player> Books { get; } //might be able to change later to just storing how many books each player has instead of which books they have
         public int StockCardCount { get { return drawPile.Count; } }
         public event EventHandler<MessageCreatedEventArgs> MessageCreated;
 
@@ -45,37 +45,33 @@ namespace Go_fishing_card_game
             foreach (Player player in players)
             {
                 CardValues cardValue = player.GetChosenCardValue();
-                
-                if (player.AskForACard(players, cardValue))
+
+                if (AskEveryoneForACard(player, cardValue))
                 {
-                    if (player.HasBook(cardValue) //add BookScored event, so the books listbox doesnt need to get updated on each turn
+                    if (player.HasBook(cardValue)) //add BookScored event, so the books listbox doesnt need to get updated on each turn
                     {
-                       
+                        player.DiscardBook(cardValue);
+                        Books.Add(cardValue, player);
+                        //BookScored event
+                        if (player.HasEmptyHand)
+                            player.Draw(drawPile, 5);
                     }
                 }
                 else
                 {
-                    if (drawPile.IsEmpty())
+                    player.Draw(drawPile);
+                    if (drawPile.IsEmpty)
+                    {
                         //game end event here
-                }
-
-
-                if (players[i].TryScoreBook()) //change this. 
-                {
-                    int drawThatMany = Math.Min(5, drawPile.Count);//change to overloaded Draw() that draws multiple
-                    for (int _ = 0; _ < drawThatMany; _++)
-                        players[i].ReceiveCard(drawPile.DealTop());//change to Draw()
+                        return true;
+                    }
                 }
             }
 
             HumanPlayer.SortHand();
-            if (drawPile.Count == 0)
-            {
-                OnMessageCreated(new MessageCreatedEventArgs("Talia jest pusta. Koniec gry!\r\n"));
-                return true;
-            }
             return false;
         }
+
         public string GetWinnerName()
         {
             var playerScores = new Dictionary<Player, int>();
@@ -84,7 +80,7 @@ namespace Go_fishing_card_game
                 playerScores.TryGetValue(pair.Value, out int score);
                 playerScores[pair.Value]++;
             }
-            List<Player> winners = new List<Player>();
+            List<Player> winners = new();
             int winningScore = 0;
             int winnerCount = 0;
             foreach (var pair in playerScores)
@@ -117,6 +113,28 @@ namespace Go_fishing_card_game
         protected virtual void OnMessageCreated(MessageCreatedEventArgs e)
         {
             MessageCreated?.Invoke(this, e);
+        }
+
+        private bool AskEveryoneForACard (Player asker, CardValues cardValue)
+        {
+            bool anyCardReceived = false;
+            foreach (Player opponent in players)
+            {
+                if (opponent == asker)
+                    continue;
+                if (asker.AskForACard(opponent, cardValue))
+                    anyCardReceived = true;
+            }
+            return anyCardReceived;
+        }
+
+        private void checkForGameEnd()
+        {
+            if (drawPile.IsEmpty)
+            {
+                //game end event
+            }
+                return;
         }
 
         private void Player_MessageCreated(object? sender, MessageCreatedEventArgs e)

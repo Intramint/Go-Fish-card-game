@@ -13,8 +13,17 @@ namespace Go_fishing_card_game
             Shuffle(random);
         }
         public int Count { get { return cards.Count; } }
+        public bool IsEmpty
+        {
+            get
+            {
+                if (cards.Count == 0)
+                    return true;
+                return false;
+            }
+        }
 
-        private List<Card> cards = new();
+private List<Card> cards = new();
 
 
         public override string ToString()
@@ -27,13 +36,6 @@ namespace Go_fishing_card_game
             Card card = cards[0];
             cards.RemoveAt(0);
             return card;
-        }
-
-        public bool IsEmpty()
-        {
-            if (cards.Count == 0)
-                return true;
-            return false;
         }
 
         private void FillDeck()

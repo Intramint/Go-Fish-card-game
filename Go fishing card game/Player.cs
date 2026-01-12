@@ -17,7 +17,7 @@ namespace Go_fishing_card_game
 
         public string Name { get; }
         public int CardCount { get { return hand.Count; } }
-        public bool HasEmptyHand { get { return hand.IsEmpty(); } }
+        public bool HasEmptyHand { get { return hand.IsEmpty; } }
         public event EventHandler<MessageCreatedEventArgs>? MessageCreated;
 
         protected Hand hand { get; }
@@ -25,7 +25,7 @@ namespace Go_fishing_card_game
         {
             for (int i = 0; i < cardCount; i++) {
                 hand.Add(sourceDeck.DealTop());
-                if (sourceDeck.IsEmpty())
+                if (sourceDeck.IsEmpty)
                     return;
             }
         }
@@ -33,6 +33,11 @@ namespace Go_fishing_card_game
         public void ReceiveCards(IEnumerable<Card> cards)
         {
             hand.Add(cards);
+        }
+
+        public void ReceiveCards(Card card)
+        {
+            hand.Add(card);
         }
 
         public IEnumerable<Card> GiveCardsWithValue(CardValues cardValue)
@@ -43,6 +48,7 @@ namespace Go_fishing_card_game
                 if (card.Value == cardValue)
                     cardsToGive.Add(card);
             }
+            hand.Remove(cardsToGive);
             return cardsToGive;
         }
 
@@ -66,7 +72,7 @@ namespace Go_fishing_card_game
         }
 
   
-        public bool DiscardBook(CardValues cardValue)
+        public void DiscardBook(CardValues cardValue)
         {
             List<Card> cardsToDiscard = new();
             foreach (Card card in hand)
@@ -75,29 +81,21 @@ namespace Go_fishing_card_game
                     cardsToDiscard.Add(card);
             }
             if (cardsToDiscard.Count != 4)
-                throw new InvalidOperationException($"Trying to score a book that has {cardsToDiscard.Count}: {cardsToDiscard}");
+                throw new InvalidOperationException($"Trying to score a book that has {cardsToDiscard.Count} cards: {cardsToDiscard}");
             hand.Remove(cardsToDiscard);
-            if (hand.IsEmpty())
-                return false;
-            return true;
         }
 
-        public bool AskForACard(List<Player> players, CardValues cardValue)
+        public bool AskForACard(Player opponent, CardValues cardValue)
         {
-            OnMessageCreated(new MessageCreatedEventArgs($"{Name} pyta, czy ktoś ma {Card.Plural(cardValue, 1)}"));
-            bool cardAdded = false;
-
-            foreach (Player opponent in players) //move logic to game.cs. leave the brainless actions here
+            //OnMessageCreated(new MessageCreatedEventArgs($"{Name} pyta, czy ktoś ma {Card.Plural(cardValue, 1)}"));
             {
-                if (opponent == this)
-                    continue;
                 if (opponent.HasValue(cardValue))
                 {
-                    cardAdded = true;
                     ReceiveCards(opponent.GiveCardsWithValue(cardValue));
+                    return true;
                 }
+                return false;
             }
-            return cardAdded;
             //if (noCardsAdded) //move all this to Game.cs
             //{               
             //    OnMessageCreated(new MessageCreatedEventArgs($"{Name} pobrał kartę z talii"));

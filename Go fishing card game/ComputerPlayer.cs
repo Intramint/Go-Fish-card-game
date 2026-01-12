@@ -15,7 +15,7 @@ namespace Go_fishing_card_game
 
         public override CardValues GetChosenCardValue()
         {
-            return hand.cards[random.Next(CardCount + 1)].Value;
+            return hand.cards[random.Next(CardCount)].Value;
         }
     }
 }

@@ -68,7 +68,7 @@ namespace Go_fishing_card_game
                 return;
             }
             gameLog.Clear();
-            if (game.PlayOneRound(handListBox.SelectedIndex))
+            if (game.PlayOneRound(handListBox.SelectedIndex)) //change PlayOneRound to void and instead react to a game end event
             {
                 gameLog.Write("Zwyciêzc¹ jest... " + game.GetWinnerName());
                 DescribeBooks();
