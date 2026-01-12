@@ -15,30 +15,6 @@ namespace Go_fishing_card_game
         private GameLogger gameLog;
         private GameLogger booksLog;
         private Game game;
-        private void buttonStart_Click(object sender, EventArgs e)
-        {
-            if (String.IsNullOrEmpty(playerNameTextBox.Text))
-            {
-                MessageBox.Show("Wpisz swoje imiê", "Nie mo¿na jeszcze rozpocz¹æ gry.");
-                return;
-            }
-            string[] names = { playerNameTextBox.Text, "Janek", "Bartek" };
-            game = new Game(names);
-            game.MessageCreated += game_MessageCreated;
-            foreach (string name in names)
-            {
-                gameLog.Write($"{name} do³¹czy³ do gry");
-            }
-            startButton.Enabled = false;
-            playerNameTextBox.Enabled = false;
-            askForCardButton.Enabled = true;
-            updateForm();
-        }
-
-        private void game_MessageCreated(object? sender, MessageCreatedEventArgs e)
-        {
-            gameLog.Write(e.Message);
-        }
 
         private void updateForm()
         {
@@ -50,7 +26,8 @@ namespace Go_fishing_card_game
             gameProgressTextBox.SelectionStart = gameProgressTextBox.Text.Length; //
             gameProgressTextBox.ScrollToCaret();                                  // scrolls text to the bottom in case there's too much text
         }
-        
+
+
         private void DescribePlayerHands()
         {
             string description;
@@ -72,10 +49,15 @@ namespace Go_fishing_card_game
         private void DescribeBooks()
         {
             booksLog.Clear();
-            foreach (Values cardValue in game.Books.Keys)
+            foreach (CardValues cardValue in game.Books.Keys) //change to react to a BookScored event
             {
                 booksLog.Write($"{game.Books[cardValue].Name} ma grupê {Card.Plural(cardValue, 0)}");
             }
+        }
+
+        private void game_MessageCreated(object? sender, MessageCreatedEventArgs e)
+        {
+            gameLog.Write(e.Message);
         }
 
         private void askForCardButton_Click(object sender, EventArgs e)
@@ -86,7 +68,7 @@ namespace Go_fishing_card_game
                 return;
             }
             gameLog.Clear();
-            if (game.PlayOneRound(handListBox.SelectedIndex))
+            if (game.PlayOneRound(handListBox.SelectedIndex)) //change PlayOneRound to void and instead react to a game end event
             {
                 gameLog.Write("Zwyciêzc¹ jest... " + game.GetWinnerName());
                 DescribeBooks();
@@ -94,6 +76,27 @@ namespace Go_fishing_card_game
             }
             else
                 updateForm();
+        }
+
+        private void buttonStart_Click(object sender, EventArgs e)
+        {
+            if (String.IsNullOrEmpty(playerNameTextBox.Text))
+            {
+                MessageBox.Show("Wpisz swoje imiê", "Nie mo¿na jeszcze rozpocz¹æ gry.");
+                return;
+            }
+            string humanName = playerNameTextBox.Text;
+            string[] opponentNames = { "Janek", "Bartek" };
+            game = new Game(humanName, opponentNames);
+            game.MessageCreated += game_MessageCreated;
+            foreach (string name in opponentNames)
+            {
+                gameLog.Write($"{name} do³¹czy³ do gry");
+            }
+            startButton.Enabled = false;
+            playerNameTextBox.Enabled = false;
+            askForCardButton.Enabled = true;
+            updateForm();
         }
     }
 }

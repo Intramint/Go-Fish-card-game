@@ -8,14 +8,14 @@ namespace Go_fishing_card_game
     {
         public int Compare(Card? x, Card? y)
         {
-            if (x.Value == Values.Ace)
+            if (x.Value == CardValues.Ace)
             {
-                if (y.Value == Values.Ace)
+                if (y.Value == CardValues.Ace)
                     return 0;
                 return 1;
             }
 
-            if (y.Value == Values.Ace)
+            if (y.Value == CardValues.Ace)
             {
                 return -1;
             }

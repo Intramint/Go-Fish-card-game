@@ -1,101 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Text;
-using System.Windows.Forms;
-using System.Linq;
+//using System.Numerics;
 
 namespace Go_fishing_card_game
 {
     internal class Game
     {
-        public List<Player> players;
-        public Dictionary<Values, Player> Books { get; private set; }
-        private Deck stock;
-        public int PlayerCount { get; private set; }
-        public int StockCardCount { get { return stock.Count; } }
-        public event EventHandler<MessageCreatedEventArgs> MessageCreated;
-
-
-        public Game(IEnumerable<string> playerNames)
+        public Game(string humanName, IEnumerable<string> opponentNames)
         {
-            Random random = new Random();
+            Random random = new();
             players = new List<Player>();
-            foreach (string playerName in playerNames)
+            drawPile = new(random);
+
+            HumanPlayer = new HumanPlayer(humanName, drawPile);
+            players.Add(HumanPlayer);
+            HumanPlayer.MessageCreated += Player_MessageCreated;
+            foreach (string opponentName in opponentNames)
             {
-                Player player = new Player(playerName, random);
+                ComputerPlayer player = new(opponentName, drawPile, random);
                 players.Add(player);
                 player.MessageCreated += Player_MessageCreated;
             }
+
             PlayerCount = players.Count;
-            HumanPlayer = players[0];
-            Books = new Dictionary<Values, Player>();
-            stock = Deck.CreateFullDeck();
-            Deal();
+            Books = new Dictionary<CardValues, Player>();
+            //todo: need to check for any books in starting hands
+
             HumanPlayer.SortHand();
-            
         }
 
-        protected virtual void OnMessageCreated(MessageCreatedEventArgs e)
-        {
-            MessageCreated?.Invoke(this, e);
-        }
-        private void Player_MessageCreated(object? sender, MessageCreatedEventArgs e)
-        {
-            OnMessageCreated(e);
-        }
+        public List<Player> players;
+        public int PlayerCount { get; }
+        public HumanPlayer HumanPlayer { get; }
+        public Dictionary<CardValues, Player> Books { get; } //might be able to change later to just storing how many books each player has instead of which books they have
+        public int StockCardCount { get { return drawPile.Count; } }
+        public event EventHandler<MessageCreatedEventArgs> MessageCreated;
 
-        public Player HumanPlayer { get; private set; }
-
-        private void Deal() {
-            stock.Shuffle();
-            foreach (Player player in players)
-            {
-                for (int i = 0; i < 5; i++)
-                    player.TakeCard(stock.Deal());
-                PullOutBooks(player);
-            }
-        }
+        private Deck drawPile;
 
         public bool PlayOneRound(int selectedPlayerCard)
         {
-           
-            for (int i = 0; i < players.Count; i++)
+            HumanPlayer.SetChosenCardValue(selectedPlayerCard);
+            foreach (Player player in players)
             {
-                if (i == 0) {
-                    players[i].AskForACard(players, i, stock, HumanPlayer.Peek(selectedPlayerCard).Value);
+                CardValues cardValue = player.GetChosenCardValue();
+
+                if (AskEveryoneForACard(player, cardValue))
+                {
+                    if (player.HasBook(cardValue)) //add BookScored event, so the books listbox doesnt need to get updated on each turn
+                    {
+                        player.DiscardBook(cardValue);
+                        Books.Add(cardValue, player);
+                        //BookScored event
+                        if (player.HasEmptyHand)
+                            player.Draw(drawPile, 5);
+                    }
                 }
                 else
-                    players[i].AskForACard(players, i, stock);
-
-                if (PullOutBooks(players[i]))
                 {
-                    int drawThatMany = Math.Min(5, stock.Count);
-                    for (int _ = 0; _ < drawThatMany; _++)
-                        players[i].TakeCard(stock.Deal());
+                    player.Draw(drawPile);
+                    if (drawPile.IsEmpty)
+                    {
+                        //game end event here
+                        return true;
+                    }
                 }
             }
 
             HumanPlayer.SortHand();
-            if (stock.Count == 0)
-            {
-                OnMessageCreated(new MessageCreatedEventArgs("Talia jest pusta. Koniec gry!\r\n"));
-                return true;
-            }
             return false;
         }
-
-        private bool PullOutBooks(Player player)
-        {
-            foreach (Values value in player.PullOutBooks()) {
-                Books.Add(value, player);
-            }
-            if (player.CardCount == 0)
-                return true;
-            return false;
-        }
-
-
 
         public string GetWinnerName()
         {
@@ -105,7 +80,7 @@ namespace Go_fishing_card_game
                 playerScores.TryGetValue(pair.Value, out int score);
                 playerScores[pair.Value]++;
             }
-            List<Player> winners = new List<Player>();
+            List<Player> winners = new();
             int winningScore = 0;
             int winnerCount = 0;
             foreach (var pair in playerScores)
@@ -116,7 +91,8 @@ namespace Go_fishing_card_game
                     winners.Add(pair.Key);
                     winnerCount = 1;
                 }
-                else if (pair.Value == winningScore) {
+                else if (pair.Value == winningScore)
+                {
                     winners.Add(pair.Key);
                     winnerCount++;
                 }
@@ -126,16 +102,44 @@ namespace Go_fishing_card_game
             {
                 return winners[0].Name;
             }
-            foreach (var winner in winners.SkipLast(1)) {
+            foreach (var winner in winners.SkipLast(1))
+            {
                 winnerNames += winner.Name + " i";
             }
             winnerNames += winners.Last().Name;
             return "Remis pomiędzy" + winnerNames;
-
         }
 
+        protected virtual void OnMessageCreated(MessageCreatedEventArgs e)
+        {
+            MessageCreated?.Invoke(this, e);
+        }
 
+        private bool AskEveryoneForACard (Player asker, CardValues cardValue)
+        {
+            bool anyCardReceived = false;
+            foreach (Player opponent in players)
+            {
+                if (opponent == asker)
+                    continue;
+                if (asker.AskForACard(opponent, cardValue))
+                    anyCardReceived = true;
+            }
+            return anyCardReceived;
+        }
 
+        private void checkForGameEnd()
+        {
+            if (drawPile.IsEmpty)
+            {
+                //game end event
+            }
+                return;
+        }
 
+        private void Player_MessageCreated(object? sender, MessageCreatedEventArgs e)
+        {
+            OnMessageCreated(e);
+        }
     }
 }

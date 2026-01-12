@@ -12,7 +12,7 @@ namespace Go_fishing_card_game
         Clubs,
     }
 
-    public enum Values
+    public enum CardValues
     {
         Ace = 1,
         Two = 2,

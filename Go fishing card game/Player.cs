@@ -1,91 +1,112 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows.Markup;
-using System.Windows.Forms;
-using System.Diagnostics.CodeAnalysis;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+//using System.Diagnostics.CodeAnalysis;
 
 namespace Go_fishing_card_game
 {
-    internal class Player
+    public abstract class Player
     {
-        public string Name { get; private set; }
-        private Random random;
-        private Deck cardsInHand = Deck.CreateEmptyDeck();
-        public int CardCount { get { return cardsInHand.Count; } }
-        public event EventHandler<MessageCreatedEventArgs>? MessageCreated;
-        public Player(string name, Random random)
+        public Player(string name, Deck drawPile)
         {
-            
-            this.Name = name;
-            this.random = random;
+            Name = name;
+            hand = new();
+            Draw(drawPile, 5);      
         }
-        
-        public IEnumerable<string> GetCardNames() { return cardsInHand.GetCardNames(); }
-        public void TakeCard(Card card) { cardsInHand.Add(card); }
-        public Card Peek(int cardNumber) { return cardsInHand.Peek(cardNumber); }
-        public void SortHand() { cardsInHand.SortByValue(); }
 
-        protected virtual void OnMessageCreated(MessageCreatedEventArgs e) 
+        public string Name { get; }
+        public int CardCount { get { return hand.Count; } }
+        public bool HasEmptyHand { get { return hand.IsEmpty; } }
+        public event EventHandler<MessageCreatedEventArgs>? MessageCreated;
+
+        protected Hand hand { get; }
+        public void Draw(Deck sourceDeck, int cardCount = 1)
+        {
+            for (int i = 0; i < cardCount; i++) {
+                hand.Add(sourceDeck.DealTop());
+                if (sourceDeck.IsEmpty)
+                    return;
+            }
+        }
+
+        public void ReceiveCards(IEnumerable<Card> cards)
+        {
+            hand.Add(cards);
+        }
+
+        public void ReceiveCards(Card card)
+        {
+            hand.Add(card);
+        }
+
+        public IEnumerable<Card> GiveCardsWithValue(CardValues cardValue)
+        {
+            var cardsToGive = new List<Card>();
+            foreach (Card card in hand)
+            {
+                if (card.Value == cardValue)
+                    cardsToGive.Add(card);
+            }
+            hand.Remove(cardsToGive);
+            return cardsToGive;
+        }
+
+        public bool HasValue(CardValues cardValue)
+        {
+            return hand.HasValue(cardValue);
+        }
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public IEnumerable<string> GetCardNames()
+        {
+            return hand.GetCardNames();
+        }
+
+        public bool HasBook(CardValues cardValue) 
+        {
+            return hand.HasBook(cardValue);  //game.cs should register the new book, tell player to discard it and to draw 5 if hand is empty
+        }
+
+  
+        public void DiscardBook(CardValues cardValue)
+        {
+            List<Card> cardsToDiscard = new();
+            foreach (Card card in hand)
+            {
+                if (card.Value == cardValue)
+                    cardsToDiscard.Add(card);
+            }
+            if (cardsToDiscard.Count != 4)
+                throw new InvalidOperationException($"Trying to score a book that has {cardsToDiscard.Count} cards: {cardsToDiscard}");
+            hand.Remove(cardsToDiscard);
+        }
+
+        public bool AskForACard(Player opponent, CardValues cardValue)
+        {
+            //OnMessageCreated(new MessageCreatedEventArgs($"{Name} pyta, czy ktoś ma {Card.Plural(cardValue, 1)}"));
+            {
+                if (opponent.HasValue(cardValue))
+                {
+                    ReceiveCards(opponent.GiveCardsWithValue(cardValue));
+                    return true;
+                }
+                return false;
+            }
+            //if (noCardsAdded) //move all this to Game.cs
+            //{               
+            //    OnMessageCreated(new MessageCreatedEventArgs($"{Name} pobrał kartę z talii"));
+            //}
+            //OnMessageCreated(new MessageCreatedEventArgs(""));//adds a new line
+        }
+
+        public abstract CardValues GetChosenCardValue();
+        protected virtual void OnMessageCreated(MessageCreatedEventArgs e)
         {
             MessageCreated?.Invoke(this, e);
-        }
-        public IEnumerable<Values> PullOutBooks() {
-            List<Values> books = new List<Values>();
-            for (int i = 1; i <= 13; i++)
-            {
-                Values value = (Values)i;
-                int howMany = 0;
-                for (int card = 0; card < cardsInHand.Count; card++)
-                    if (cardsInHand.Peek(card).Value == value)
-                        howMany++;
-                if (howMany == 4)
-                {
-                    books.Add(value);
-                    for (int card = cardsInHand.Count - 1; card >= 0; card--)
-                        cardsInHand.Deal(card);
-                }
-            }
-            return books;
-        }
-
-        public Deck LoseCards(Values value)
-        {
-            Deck deckToReturn = cardsInHand.PullOutValues(value);
-            int howMany = deckToReturn.Count;
-            OnMessageCreated(new MessageCreatedEventArgs($"{Name} ma {howMany} {Card.Plural(value, howMany)}"));
-            return deckToReturn;
-        }
-
-        public void AskForACard(List<Player> players, int myIndex, Deck stock)
-        {
-            int value = random.Next(players[myIndex].CardCount) + 1;
-            AskForACard(players, myIndex, stock, (Values)value);
-        }
-
-        public void AskForACard(List<Player> players, int myIndex, Deck stock, Values value)
-        {
-            OnMessageCreated(new MessageCreatedEventArgs($"{Name} pyta, czy ktoś ma {Card.Plural(value, 1)}"));
-            bool noCardsAdded = true;
-
-            for (int i = 0; i < players.Count; i++)
-            {
-                if (i == myIndex)
-                    continue;
-                Deck cardsToAdd = players[i].LoseCards(value);
-                int cardsAddedNum = cardsToAdd.Count;
-                for (int j = 0; j < cardsAddedNum; j++)
-                {
-                    noCardsAdded = false;
-                    TakeCard(cardsToAdd.Peek(j));
-                }
-            }
-            if (noCardsAdded)
-            {
-                TakeCard(stock.Deal());
-                OnMessageCreated(new MessageCreatedEventArgs($"{Name} pobrał kartę z talii"));
-            }
-            OnMessageCreated(new MessageCreatedEventArgs(""));//adds a new line
         }
     }
 }
